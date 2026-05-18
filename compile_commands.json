@@ -1,0 +1,18 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-O1",
+      "-Wall",
+      "-Wextra",
+      "-Iinc/",
+      "-c",
+      "-o",
+      "build/main.o",
+      "src/main.c"
+    ],
+    "directory": "/home/mike/src/ppm",
+    "file": "/home/mike/src/ppm/src/main.c",
+    "output": "/home/mike/src/ppm/build/main.o"
+  }
+]

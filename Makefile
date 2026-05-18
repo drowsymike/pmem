@@ -1,5 +1,6 @@
 TARGET = pmem
 SRC_DIR = src
+INC_DIR = inc
 BUILD_DIR = build
 SRC = $(SRC_DIR)/main.c
 OBJ = $(BUILD_DIR)/main.o
@@ -39,6 +40,8 @@ CFLAGS = \
 # -fPIE - independence from the memory address of the binary file execution
 # -z,relro - changing the operating mode of dynamic linkage tables of standard libc functions
 # -fcf-protection=full - hardware support for a second program stack with return addresses
+
+CFLAGS += -Iinc/
 
 LDFLAGS = \
 	-pie \
