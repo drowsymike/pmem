@@ -12,6 +12,10 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <errno.h>
+#include <getopt.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <time.h>
 
 #define PROGRAM_NAME "pmem"
 #define PRIGRAM_VERSION "0.1"
@@ -50,6 +54,22 @@
  * 
  */
 //#define SECCOMP_ENABLE
+
+
+/*--Searching strings for parsing--------------------------------------------*/
+
+#define VMPEAK "VmPeak:"
+#define VMSIZE "VmSize:"
+#define VMLCK "VmLck:"
+#define VMPIN "VmPin:"
+#define VMHWM "VmHWM:"
+#define VMRSS "VmRSS:"
+
+/* --- */
+
+#define NAME "Name:"
+#define STATE "State:"
+#define PID "Pid:"
 
 /*--Function headers---------------------------------------------------------*/
 

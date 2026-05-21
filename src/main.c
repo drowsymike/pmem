@@ -53,7 +53,14 @@ void print_version() {
  */
 void print_help(void)
 {
-  puts("NO WAY HAHAHAHHAHAHA");
+  puts("Usage: pmem [OPTION...]");
+  puts("Monitoring process memory consumption");
+  puts("");
+  puts("  -h, -H, --help         Show help options (flag)");
+  puts("  -v, -V, --version      Show current version (flag)");
+  puts("  -p, --procid           Choose the concrete PID for monitoring (argument)");
+  puts("  -l, --live             Enable alive continuous monitoring mode (flag)");
+  puts("  -e. --extout           Enable detailed output of process information (in the case of live mode, every 10 lines of tracking are output) (flag)");
 }
 
 /**
@@ -70,9 +77,77 @@ int8_t check_does_process_exist(char* process_dir)
     exit(ENOENT);
   }
 
-  printf("Process exists");
+  return 0;
+}
+
+/**
+ *  @brief Fuinction for checking the process' status for the moment
+ * 
+ */
+int8_t process_monitoring(char* process_file, bool live_flag, bool extended_output) 
+{
+  FILE *fp;
+  if ((fp = fopen(process_file, "r")) == NULL) 
+  {
+    exit(1);
+  }
+
+  /* --- */
+
+  if (live_flag == true)
+  {
+    //note: use nanosleep here
+  } else 
+  {
+    parse_process_state(fp);
+  }
 
   return 0;
+}
+
+/**
+ *  @brief Function for parsing the process' argument (and searching this)
+ * 
+ */
+void parse_process_state(FILE *fp)
+{
+  char buffer[256];
+  int line_number = 1;
+  //int found = 0;
+
+  char proc_name[256] = {0};
+  unsigned long vm_hwm = 0;
+  unsigned long vm_peak = 0;
+
+  while (fgets(buffer, sizeof(buffer), fp) != NULL) 
+  {
+    if (strstr(buffer, NAME) != NULL) 
+    {
+      //printf("Name found at the string: %d\n", line_number);
+      sscanf(buffer, "%*s %255s", proc_name);
+    } else if (strstr(buffer, VMHWM) != NULL) 
+    {
+      //printf("VmHwm found at the string: %d\n", line_number);
+      sscanf(buffer, "%*s %lu", &vm_hwm);
+    } else if (strstr(buffer, VMPEAK) != NULL) 
+    {
+      //printf("VmPeak found at the string: %d\n", line_number);
+      sscanf(buffer, "%*s %lu", &vm_peak);
+    }
+    line_number++;
+  }
+
+  if (vm_hwm == 0) 
+  {
+    puts("Warning: VmHwm parameter not found");
+  }
+
+  if (vm_peak == 0) 
+  {
+    puts("Warning: VmPeak parameter not found");
+  }
+
+  printf("Process: %s | VmPeak: %lu KB | VmHWM: %lu KB\n", proc_name, vm_peak, vm_hwm);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -97,14 +172,15 @@ int main(int argc, char *argv[])
 
   static struct option long_options[] = 
 	{
-    {"version", no_argument, 0, VERSION_FLAG},
-    {"help", no_argument, 0, HELP_FLAG},
-    {"procid", required_argument, 0, PROCESS_PID_FLAG},
-    {"live", no_argument, 0, LIVE_FLAG},
+    {VERSION_ARG, no_argument, 0, VERSION_FLAG},
+    {HELP_ARG, no_argument, 0, HELP_FLAG},
+    {PROCESS_PID_ARG, required_argument, 0, PROCESS_PID_FLAG},
+    {LIVE_ARG, no_argument, 0, LIVE_FLAG},
+    {EXTENDED_OUTPUT_ARG, no_argument, 0, EXTENDED_OUTPUT_FLAG},
     {0, 0, 0, 0}
   };
 
-  while ((opt = getopt_long(argc, argv, "vhp:l", long_options, NULL)) != -1) 
+  while ((opt = getopt_long(argc, argv, "vhp:le", long_options, NULL)) != -1) 
   {
     switch (opt) 
     {
@@ -119,6 +195,7 @@ int main(int argc, char *argv[])
         break;
       case LIVE_FLAG:
         puts("nah");
+      case EXTENDED_OUTPUT_FLAG:
         break;
     }
   }
@@ -133,13 +210,19 @@ int main(int argc, char *argv[])
 
   /* --- */
 
-  char process[15] = PROCESS_PATHNAME_FOREWORD;
-  strcat(process, pid);
+  char process_dir[64]; 
+  char process_state_file[128];
+  snprintf(process_dir, sizeof(process_dir), "%s%s", PROCESS_PATHNAME_FOREWORD, pid);
+  snprintf(process_state_file, sizeof(process_state_file), "%s%s%s", PROCESS_PATHNAME_FOREWORD, pid, PROCESS_PATHNAME_AFTERWORD);
+
+  //printf("%s\n", process_dir);
+  //printf("%s\n", process_state_file);
 
   /* --- */
 
   set_security();
-  check_does_process_exist(process);
+  check_does_process_exist(process_dir);
+  process_monitoring(process_state_file, false, false);
 
   /* --- */
 

@@ -1,2 +1,4 @@
 build/
 note.txt
+compile_commands.json
+.cache/
